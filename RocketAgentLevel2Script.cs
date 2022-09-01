@@ -24,7 +24,7 @@ public class RocketAgentLevel2Script : Agent
     // LandingPosition() 
     public bool landingPadIsOnRight=true;
 
-    // UIScript
+    // UIScript.cs
     public Text rewardText;
 
     // RandomLandingPadRepositionOnTheRight()
@@ -53,7 +53,7 @@ public class RocketAgentLevel2Script : Agent
 
         float rotationAction = vectorAction[1];
 
-        // possible actions for the turbine
+        // Possible actions for the turbine
         if(thrustingAction==1){rb.AddRelativeForce(Vector3.up * mainThrust * Time.deltaTime); print("thrust");}
         if(thrustingAction==0){rb.AddRelativeForce(Vector3.up * 0 * Time.deltaTime); print("not thrusting"); AddReward(-0.0001f);} // If no action is taken, penalize the agent
 
@@ -94,7 +94,7 @@ public class RocketAgentLevel2Script : Agent
         {
             if (transform.position.x>finishPad.transform.position.x+3.5f) // If agent goes past WHOLE LandingPad
             {
-                print("doylevei deksia");
+                print("works: right");
                 AddReward(-0.0001f);
             }
         }else
@@ -192,7 +192,6 @@ public class RocketAgentLevel2Script : Agent
         }
     }
 
-
     // Rocket Rotation
     void ApplyRotation(float rotationThisFrame)
     {
@@ -204,7 +203,6 @@ public class RocketAgentLevel2Script : Agent
     // Collision handling of the agent, with the other objects in scene
     private void OnCollisionEnter(Collision other) 
     {
-        
         switch(other.gameObject.tag) 
         {
             case "Friendly":
