@@ -1,0 +1,303 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+using Unity.MLAgents;
+using Unity.MLAgents.Sensors;
+
+public class RocketAgentLevel8Script : Agent
+{
+    //παράμετροι, υπεύθυνει για την κίνηση
+    [SerializeField] float mainThrust = 350f;
+    [SerializeField] float rotationThrust = 60f;
+    Rigidbody rb;
+    
+    public GameObject finishPad;
+    //Χρήση των συντεταγμένων του ως σημείο αναφοράς για την σχετική τοποθέτηση των υπολοίπων στοιχείων
+    //κατα την δημιουργία του κάθε επεισοδίου
+    public GameObject launchPad;
+
+    //Level8 
+    public GameObject obstacle1;
+    public GameObject obstacle2;
+    //public GameObject obstacle3;
+
+    //Χρήση για τον τερματισμό του επεισοδίου
+    bool episodeDoneFlag=false;
+    bool rocketLandedFlag=false;
+
+    //LandingPosition() 
+    public bool landingPadIsOnRight=true;
+
+    //gia UI
+    public Text rewardText;
+    public float episodeTimer;
+
+    // RandomLandingPadRepositionOnTheRight()
+    private int randomNumberX;
+    private int randomNumberY;
+    //Level8
+    private int randomNumberObs1X;
+    private int randomNumberObs1Y;
+    private int randomNumberObs2X;
+    private int randomNumberObs2Y;
+    //private int randomNumberObs3X;
+    //private int randomNumberObs3Y;
+
+    //Για την βοήθεια υπολογισμού του χρόνου του κάθε επεισοδίου
+    void Update()
+    {
+        episodeTimer+=Time.deltaTime;
+    }
+
+    //Κατα την αρχικοποίηση της εκπαίδευσης
+    public override void Initialize()
+    {
+        rb = GetComponent<Rigidbody>();
+    }
+
+    //Συλλογή παρατηρήσεων του περιβάλλοντος από τον πράκτορα
+    public override void CollectObservations(VectorSensor sensor)
+    {
+        sensor.AddObservation(rb.velocity);
+        sensor.AddObservation(transform.position);
+        sensor.AddObservation(transform.rotation.z);
+        sensor.AddObservation(finishPad.transform.position);
+        //Level8
+        sensor.AddObservation(obstacle1.transform.position);
+        sensor.AddObservation(obstacle2.transform.position);
+        //sensor.AddObservation(obstacle3.transform.position);
+
+    }
+
+    //Επιλογή δράσης απο τον πράκτορα και κατάλληλη απόδοση ποινών και ανταμοιβών
+    public override void OnActionReceived(float[] vectorAction)
+    {
+        float thrustingAction = vectorAction[0];
+
+        float rotationAction = vectorAction[1];
+
+        //πιθανές δράσεις για τον κινητήρα
+        if(thrustingAction==1){rb.AddRelativeForce(Vector3.up * mainThrust * Time.deltaTime); print("thrust");}
+        if(thrustingAction==0){rb.AddRelativeForce(Vector3.up * 0 * Time.deltaTime); print("not thrusting"); AddReward(-0.0001f);}//Καμία δράση να τιμωρείται λίγο
+
+        //πιθανές δράσεις για την περιστροφή του πυραύλου
+        if(rotationAction==1)//περιστροφή προς τα αριστερά
+        {
+            ApplyRotation(rotationThrust); 
+            print("left rotation");
+            if (!landingPadIsOnRight)//Όταν είναι αριστερά το LandingPad
+            {
+                AddReward(0.002f);//Επιβράβευση όταν πηγαίνει προς τα αριστερά
+                
+            }else
+            {
+                AddReward(-0.002f);// Ποινή όταν πηγαίνει προς τα δεξιά
+            }
+        }
+
+        if(rotationAction==2)//περιστροφή προς τα δεξιά
+        {
+            ApplyRotation(-rotationThrust); 
+            print("right rotation");
+            if (landingPadIsOnRight)//Όταν είναι δεξιά το LandingPad
+            {
+                AddReward(0.002f);//Επιβράβευση όταν πηγαίνει προς τα δεξιά
+            }else
+            {
+                AddReward(-0.002f);// Ποινή όταν πηγαίνει προς τα αριστερά
+            }
+        
+        }
+
+
+        if(rotationAction==0){ApplyRotation(0); print("no rotation");} //Δε κάνει τίποτα αν επιλεγεί αυτή η δράση
+
+        //Τιμωρία αν περνάει την χ συντεταγμένη του landingPad
+        if (landingPadIsOnRight)
+        {
+            if (transform.position.x>finishPad.transform.position.x+3.5f)//Αν προσπεράσει ΟΛΟΚΛΗΡΟ το landingPad
+            {
+                print("doylevei deksia");
+                AddReward(-0.0002f);
+            }
+        }else
+        {
+            if (transform.position.x<finishPad.transform.position.x-3.5f)//Αν προσπεράσει ΟΛΟΚΛΗΡΟ το landingPad
+            {
+                AddReward(-0.0002f);
+            }
+        }
+
+        //Πρωτότυπο: if((transform.position.y>60) || (transform.position.y<-5) || (transform.position.x>50) || transform.position.x<-50)
+        //Ποινή αν βγεί εκτός ορίων της πίστας ο πύραυλος και επανεκκίνηση επεισοδίου
+        if((transform.position.y>launchPad.transform.position.y+60) || (transform.position.y<launchPad.transform.position.y-5) || (transform.position.x>launchPad.transform.position.x+55) || transform.position.x<launchPad.transform.position.x-45)
+        {
+            AddReward(-1f);
+            EndEpisode();
+        }
+
+        //Επιβράβευση αν νικήσει= αν βρει τον στόχο ο πύραυλος, και επανεκκίνηση επεισοδίου
+        if(rocketLandedFlag)
+        {
+            AddReward(20f);
+            EndEpisode();
+        }
+
+        //Ποινή αν χτυπήσει σε μη φιλικό έδαφος/εμπόδιο/όχι στο landingPad
+        if(episodeDoneFlag)
+        {
+            AddReward(-1f);
+            EndEpisode();
+        }
+        if(episodeTimer>50f){AddReward(-1f);EndEpisode();}
+        if(episodeTimer>6f){launchPad.SetActive(false);}
+
+        //Επιδειξη του Reward του παρόντος επεισοδίου, στην οθόνη του παίχτη
+        rewardText.text=GetCumulativeReward().ToString("0.000");
+    }
+    
+    //Για δοκιμή των κινήσεων με το πάτημα πλήκτρων όταν δεν γίνεται η εκπαίδευση
+    public override void Heuristic(float[] actionsOut)
+    {
+
+    bool isThrusting= Input.GetKey(KeyCode.Space);
+    bool leftRotationgKey = Input.GetKey(KeyCode.A);
+    bool rightRotationKey = Input.GetKey(KeyCode.D);
+
+    if(isThrusting)
+    {
+        actionsOut[0]=1;
+        //print("space pressed");
+    }else
+    {
+        actionsOut[0]=0;
+    }
+
+    if(leftRotationgKey)
+    {
+        actionsOut[1]=1;
+    }else if (rightRotationKey)
+    {
+        actionsOut[1]=2;
+    }else
+    {
+        actionsOut[1]=0;
+    }
+    }
+    
+
+    //Οι κατάλληλες αρχικοποιήσεις στην αρχή κάθε επεισοδίου.
+    public override void OnEpisodeBegin()
+    {
+        RandomLandingPadRepositionOnTheRight();//Level2 //Level 3
+        episodeTimer=0;
+        launchPad.SetActive(true);
+
+        episodeDoneFlag=false;
+        rocketLandedFlag=false;
+        //Σωστή τοποθέτηση του πυραύλου στην αρχή της πίστας
+        transform.position= new Vector3(launchPad.transform.position.x,launchPad.transform.position.y+1.7f,launchPad.transform.position.z); //Πρωτότυπο: new Vector3(-5,1.7f,0);
+        transform.rotation= Quaternion.Euler(0,0,0);
+        rb.velocity=new Vector3(0,0,0); // μηδενισμός της ταχύτητας που έιχε ο πύραυλος λίγο πριν την λήξη του επεισοδίου
+        
+        LandingPadPosition();//Υπολογισμός σχετικής θέσης του landing με το launch pad
+    }
+
+    //Level2, Level3, Level4 Level8!
+    private void RandomLandingPadRepositionOnTheRight()
+    {
+        
+        randomNumberX= Random.Range(5,45);// Πρωτότυπο Random.Range(0,40); //LEVEL2,
+        randomNumberY= Random.Range(0,30);//Level4 για ύψος
+        
+        randomNumberObs1X= Random.Range(5,45);
+        randomNumberObs1Y= Random.Range(0,30);
+        if(randomNumberObs1X%2==1)
+        {
+            obstacle1.transform.position= new Vector3(launchPad.transform.position.x+randomNumberObs1X,launchPad.transform.position.y+randomNumberObs1Y,launchPad.transform.position.z);
+        }else        
+        {
+            obstacle1.transform.position= new Vector3(launchPad.transform.position.x-randomNumberObs1X,launchPad.transform.position.y+randomNumberObs1Y,launchPad.transform.position.z);
+        }
+
+        randomNumberObs2X= Random.Range(5,45);
+        randomNumberObs2Y= Random.Range(0,30);
+        if(randomNumberObs2X%2==1)
+        {
+            obstacle2.transform.position= new Vector3(launchPad.transform.position.x+randomNumberObs2X,launchPad.transform.position.y+randomNumberObs2Y,launchPad.transform.position.z);
+        }else        
+        {
+            obstacle2.transform.position= new Vector3(launchPad.transform.position.x-randomNumberObs2X,launchPad.transform.position.y+randomNumberObs2Y,launchPad.transform.position.z);
+        }
+
+        //randomNumberObs3X= Random.Range(5,45);
+        //randomNumberObs3Y= Random.Range(0,30);
+        //if(randomNumberObs3X%2==1)
+        //{
+            //obstacle3.transform.position= new Vector3(launchPad.transform.position.x+randomNumberObs3X,launchPad.transform.position.y+randomNumberObs3Y,launchPad.transform.position.z);
+        //}else        
+        //{
+            //obstacle3.transform.position= new Vector3(launchPad.transform.position.x-randomNumberObs3X,launchPad.transform.position.y+randomNumberObs3Y,launchPad.transform.position.z);
+        //}
+
+
+
+        if(randomNumberX%2==1)
+        {
+            finishPad.transform.position= new Vector3(launchPad.transform.position.x+randomNumberX,launchPad.transform.position.y+randomNumberY,launchPad.transform.position.z);
+            //obstacle.transform.position= new Vector3(launchPad.transform.position.x+randomNumberX,launchPad.transform.position.y+randomNumberY,launchPad.transform.position.z);// LEVEL7
+        }else
+        {
+            finishPad.transform.position= new Vector3(launchPad.transform.position.x-randomNumberX,launchPad.transform.position.y+randomNumberY,launchPad.transform.position.z);
+            //obstacle.transform.position= new Vector3(launchPad.transform.position.x+randomNumberX,launchPad.transform.position.y+randomNumberY,launchPad.transform.position.z);// LEVEL7
+        }
+        //Πρωτότυπο Vector3(randomNumberX,0,0);
+        //LEVEL2finishPad.transform.position= new Vector3(launchPad.transform.position.x+randomNumberX,launchPad.transform.position.y,launchPad.transform.position.z);
+    }
+    
+    private void LandingPadPosition()
+    {
+        // Να έχω τον νου μου μήπως υπάρχει πρόβλημα με το = ή αν συμπέφτουν καμιά φορά
+        if(finishPad.transform.position.x>launchPad.transform.position.x) //Πρωτότυπο if(finishPad.transform.position.x>-5)
+        {
+            landingPadIsOnRight=true;
+        }else
+        {
+            landingPadIsOnRight=false;
+        }
+    }
+
+
+    // Περιστροφή πυραύλου Movement.cs 
+    void ApplyRotation(float rotationThisFrame)
+    {
+        rb.freezeRotation = true; // freezing rotation
+        transform.Rotate(Vector3.forward * rotationThisFrame * Time.deltaTime);
+        rb.freezeRotation = false; // UNfreezing rotation
+    }
+
+    //Διαχείριση συγκρούσεων του πράκτορα με τα διάφορα αντικείμενα του περιβάλλοντος
+    private void OnCollisionEnter(Collision other) 
+    {
+        
+        switch(other.gameObject.tag) 
+        {
+            case "Friendly":
+                Debug.Log("This thing is friendly");
+                break;
+            case "Finish":
+                Debug.Log("Congratulations, you finished!");
+                rocketLandedFlag=true;
+                break;
+            case "Obstacle":
+                Debug.Log("Obstascle hit");
+                episodeDoneFlag=true;
+                break;
+            default:
+                episodeDoneFlag=true;
+                break;
+        }
+    }
+}
