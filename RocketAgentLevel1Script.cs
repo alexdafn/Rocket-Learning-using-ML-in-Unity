@@ -8,36 +8,35 @@ using Unity.MLAgents.Sensors;
 
 public class RocketAgentLevel1Script : Agent
 {
-    //παράμετροι, υπεύθυνει για την κίνηση
+    // Rocket movement parameters
     [SerializeField] float mainThrust = 350f;
     [SerializeField] float rotationThrust = 60f;
     Rigidbody rb;
     
     public GameObject finishPad;
-    //Χρήση των συντεταγμένων του ως σημείο αναφοράς για την σχετική τοποθέτηση των υπολοίπων στοιχείων
-    //κατα την δημιουργία του κάθε επεισοδίου
+    // Use of its 3D coordinates so the rest objects will be placed in space according to it
     public GameObject launchPad;
 
-    //Χρήση για τον τερματισμό του επεισοδίου
+    // Used to end the episode of the training
     bool episodeDoneFlag=false;
     bool rocketLandedFlag=false;
 
-    //LandingPosition() 
+    // LandingPosition() 
     public bool landingPadIsOnRight=true;
 
-    //gia UI
+    // UIScript
     public Text rewardText;
 
     // RandomLandingPadRepositionOnTheRight()
     private int randomNumber;
 
-    //Κατα την αρχικοποίηση της εκπαίδευσης
+    // Initialization of the training
     public override void Initialize()
     {
         rb = GetComponent<Rigidbody>();
     }
 
-    //Συλλογή παρατηρήσεων του περιβάλλοντος από τον πράκτορα
+    // Collects the agent's observation from its environment
     public override void CollectObservations(VectorSensor sensor)
     {
         sensor.AddObservation(rb.velocity);
@@ -47,133 +46,131 @@ public class RocketAgentLevel1Script : Agent
 
     }
 
-    //Επιλογή δράσης απο τον πράκτορα και κατάλληλη απόδοση ποινών και ανταμοιβών
+    // Action selected from the agent and its penalty/reward assignment
     public override void OnActionReceived(float[] vectorAction)
     {
         float thrustingAction = vectorAction[0];
         float rotationAction = vectorAction[1];
 
-        //πιθανές δράσεις για τον κινητήρα
+        // possible actions for the turbine
         if(thrustingAction==1){rb.AddRelativeForce(Vector3.up * mainThrust * Time.deltaTime); print("thrust");}
-        if(thrustingAction==0){rb.AddRelativeForce(Vector3.up * 0 * Time.deltaTime); print("not thrusting"); AddReward(-0.0001f);}//Καμία δράση να τιμωρείται λίγο
+        if(thrustingAction==0){rb.AddRelativeForce(Vector3.up * 0 * Time.deltaTime); print("not thrusting"); AddReward(-0.0001f);} // If no action is taken, penalize the agent
 
-        //πιθανές δράσεις για την περιστροφή του πυραύλου
-        if(rotationAction==1)//περιστροφή προς τα αριστερά
+        // Possible actions for the rotation of the rocket
+        if(rotationAction==1) // Left rotation
         {
             ApplyRotation(rotationThrust); 
             print("left rotation");
-            if (!landingPadIsOnRight)//Όταν είναι αριστερά το LandingPad
+            if (!landingPadIsOnRight) // When LandingPad is on the left
             {
-                AddReward(0.001f);//Επιβράβευση όταν πηγαίνει προς τα αριστερά
+                AddReward(0.001f) ; // Reward when the agent goes left
                 
             }else
             {
-                AddReward(-0.001f);// Ποινή όταν πηγαίνει προς τα δεξιά
+                AddReward(-0.001f); // Penalty when the agent goes left
             }
         }
 
-        if(rotationAction==2)//περιστροφή προς τα δεξιά
+        if(rotationAction==2) // Right rotation
         {
             ApplyRotation(-rotationThrust); 
             print("right rotation");
-            if (landingPadIsOnRight)//Όταν είναι δεξιά το LandingPad
+            if (landingPadIsOnRight) // When LandingPad is on the right
             {
-                AddReward(0.001f);//Επιβράβευση όταν πηγαίνει προς τα δεξιά
+                AddReward(0.001f) ; // Reward when the agent goes right
             }else
             {
-                AddReward(-0.001f);// Ποινή όταν πηγαίνει προς τα αριστερά
+                AddReward(-0.001f); // Penalty when the agent goes right
             }
         }
-        if(rotationAction==0){ApplyRotation(0); print("no rotation");} //Δε κάνει τίποτα αν επιλεγεί αυτή η δράση
+        if(rotationAction==0){ApplyRotation(0); print("no rotation");} // No action
 
-        //Τιμωρία αν περνάει την χ συντεταγμένη του landingPad
+        // Penalty when the agent gets past the x coordinate of the LandinPad
         if (landingPadIsOnRight)
         {
-            if (transform.position.x>finishPad.transform.position.x+3.5f)//Αν προσπεράσει ΟΛΟΚΛΗΡΟ το landingPad
+            if (transform.position.x>finishPad.transform.position.x+3.5f) // If agent goes past WHOLE LandingPad
             {
-                print("doylevei deksia");
+                print("works: right");
                 AddReward(-0.0001f);
             }
         }else
         {
-            if (transform.position.x<finishPad.transform.position.x-3.5f)//Αν προσπεράσει ΟΛΟΚΛΗΡΟ το landingPad
+            if (transform.position.x<finishPad.transform.position.x-3.5f) // If agent goes past WHOLE LandingPad
             {
                 AddReward(-0.0001f);
             }
         }
 
-        //Πρωτότυπο: if((transform.position.y>30) || (transform.position.y<-5) || (transform.position.x>50) || transform.position.x<-50)
-        //Ποινή αν βγεί εκτός ορίων της πίστας ο πύραυλος και επανεκκίνηση επεισοδίου
+        // Penalty if the agent gets our of boundries and restarts the episode
         if((transform.position.y>launchPad.transform.position.y+22) || (transform.position.y<launchPad.transform.position.y-5) || (transform.position.x>launchPad.transform.position.x+55) || transform.position.x<launchPad.transform.position.x-45)
         {
             AddReward(-1f);
             EndEpisode();
         }
 
-        //Επιβράβευση αν νικήσει= αν βρει τον στόχο ο πύραυλος, και επανεκκίνηση επεισοδίου
+        // Big reward if the agent reaches the FinishPad
         if(rocketLandedFlag)
         {
             AddReward(5f);
             EndEpisode();
         }
 
-        //Ποινή αν χτυπήσει σε μη φιλικό έδαφος/εμπόδιο/όχι στο landingPad
+        // Penalty if the agents hits on the ground/obstacle
         if(episodeDoneFlag)
         {
             AddReward(-1f);
             EndEpisode();
         }
 
-        //Επιδειξη του Reward του παρόντος επεισοδίου, στην οθόνη του παίχτη
+        // Current reward of the episode display on screen
         rewardText.text=GetCumulativeReward().ToString("0.000");
     }
     
-    //Για δοκιμή των κινήσεων με το πάτημα πλήκτρων όταν δεν γίνεται η εκπαίδευση
+    // When not training, programemr can get control of the rocket's movement
     public override void Heuristic(float[] actionsOut)
     {
+        bool isThrusting= Input.GetKey(KeyCode.Space);
+        bool leftRotationgKey = Input.GetKey(KeyCode.A);
+        bool rightRotationKey = Input.GetKey(KeyCode.D);
 
-    bool isThrusting= Input.GetKey(KeyCode.Space);
-    bool leftRotationgKey = Input.GetKey(KeyCode.A);
-    bool rightRotationKey = Input.GetKey(KeyCode.D);
+        if(isThrusting)
+        {
+            actionsOut[0]=1;
+        }else
+        {
+            actionsOut[0]=0;
+        }
 
-    if(isThrusting)
-    {
-        actionsOut[0]=1;
-        //print("space pressed");
-    }else
-    {
-        actionsOut[0]=0;
+        if(leftRotationgKey)
+        {
+            actionsOut[1]=1;
+        }else if (rightRotationKey)
+        {
+            actionsOut[1]=2;
+        }else
+        {
+            actionsOut[1]=0;
+        }
     }
 
-    if(leftRotationgKey)
-    {
-        actionsOut[1]=1;
-    }else if (rightRotationKey)
-    {
-        actionsOut[1]=2;
-    }else
-    {
-        actionsOut[1]=0;
-    }
-    }
-
-    //Οι κατάλληλες αρχικοποιήσεις στην αρχή κάθε επεισοδίου.
+    // Resets the values, at the beginning of each episode
     public override void OnEpisodeBegin()
     {
         episodeDoneFlag=false;
         rocketLandedFlag=false;
-        //Σωστή τοποθέτηση του πυραύλου στην αρχή της πίστας
-        transform.position= new Vector3(launchPad.transform.position.x,launchPad.transform.position.y+1.7f,launchPad.transform.position.z); //Πρωτότυπο: new Vector3(-5,1.7f,0);
+        // Reposition of the rocket on top of the LaunchPad
+        transform.position= new Vector3(launchPad.transform.position.x,launchPad.transform.position.y+1.7f,launchPad.transform.position.z);
         transform.rotation= Quaternion.Euler(0,0,0);
-        rb.velocity=new Vector3(0,0,0); // μηδενισμός της ταχύτητας που έιχε ο πύραυλος λίγο πριν την λήξη του επεισοδίου
+        rb.velocity=new Vector3(0,0,0); // Reset at 0 of the rocket speed
         
-        LandingPadPosition();//Υπολογισμός σχετικής θέσης του landing με το launch pad
+        LandingPadPosition(); 
     }
     
+    // Calculation of the relative position of the LandingPad compared to LaunchPad
     private void LandingPadPosition()
     {
         
-        if(finishPad.transform.position.x>launchPad.transform.position.x) //Πρωτότυπο if(finishPad.transform.position.x>-5)
+        if(finishPad.transform.position.x>launchPad.transform.position.x) 
         {
             landingPadIsOnRight=true;
         }else
@@ -183,7 +180,7 @@ public class RocketAgentLevel1Script : Agent
     }
 
 
-    // Περιστροφή πυραύλου Movement.cs 
+    // Rocket Rotation
     void ApplyRotation(float rotationThisFrame)
     {
         rb.freezeRotation = true; // freezing rotation
@@ -191,7 +188,7 @@ public class RocketAgentLevel1Script : Agent
         rb.freezeRotation = false; // UNfreezing rotation
     }
 
-    //Διαχείριση συγκρούσεων του πράκτορα με τα διάφορα αντικείμενα του περιβάλλοντος
+    // Collision handling of the agent, with the other objects in scene
     private void OnCollisionEnter(Collision other) 
     {
         
