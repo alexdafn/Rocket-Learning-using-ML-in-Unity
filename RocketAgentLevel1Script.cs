@@ -27,9 +27,6 @@ public class RocketAgentLevel1Script : Agent
     // UIScript
     public Text rewardText;
 
-    // RandomLandingPadRepositionOnTheRight()
-    private int randomNumber;
-
     // Initialization of the training
     public override void Initialize()
     {
@@ -63,7 +60,7 @@ public class RocketAgentLevel1Script : Agent
             print("left rotation");
             if (!landingPadIsOnRight) // When LandingPad is on the left
             {
-                AddReward(0.001f) ; // Reward when the agent goes left
+                AddReward(0.001f); // Reward when the agent goes left
                 
             }else
             {
@@ -169,7 +166,6 @@ public class RocketAgentLevel1Script : Agent
     // Calculation of the relative position of the LandingPad compared to LaunchPad
     private void LandingPadPosition()
     {
-        
         if(finishPad.transform.position.x>launchPad.transform.position.x) 
         {
             landingPadIsOnRight=true;
