@@ -8,57 +8,57 @@ using Unity.MLAgents.Sensors;
 
 public class RocketAgentLevel5ImitationScript : Agent
 {
-    //παράμετροι, υπεύθυνει για την κίνηση
+    // Rocket movement parameters
     [SerializeField] float mainThrust = 350f;
     [SerializeField] float rotationThrust = 60f;
     Rigidbody rb;
     
     public GameObject finishPadRed;
-    public GameObject finishPadGreen;
-    //Χρήση των συντεταγμένων του ως σημείο αναφοράς για την σχετική τοποθέτηση των υπολοίπων στοιχείων
-    //κατα την δημιουργία του κάθε επεισοδίου
+    public GameObject finishPadGreen; // Level5
+    // Use of its 3D coordinates so the rest objects will be placed in space according to it
     public GameObject launchPad;
 
-    //Χρήση για τον τερματισμό του επεισοδίου
+    // Used to end the episode of the training
     bool episodeDoneFlag=false;
     bool rocketLandedRedFlag=false;
     bool rocketLandedGreenFlag=false;
     bool oneTimeFlag=false;
 
-    //LandingPosition() 
+    // LandingPosition() 
     public bool landingPadIsOnRight=true;
 
-    //gia UI
+    // UIScript.cs
     public Text rewardText;
     public float episodeTimer;
 
-    // RandomLandingPadRepositionOnTheRight()
+    // RandomLandingPadReposition()
     private int randomNumberRedX;
     private int randomNumberRedY;
     private int randomNumberGreenX;
     private int randomNumberGreenY;
     private float randomNumberRocket;
 
-    //Level5 σχετικές θέσεις
-    //FinishPad_First()
+    // Level5 relative position of the first LandingPad compared to the other
+    // FinishPad_First()
+    // USED for a non successful training, NOT IN USE
     private bool upLeft;
     private bool upRight;
     private bool downLeft;
     private bool downRight;
 
-    //Για την βοήθεια υπολογισμού του χρόνου του κάθε επεισοδίου
+    // Timer for each episode
     void Update()
     {
         episodeTimer+=Time.deltaTime;
     }
     
-    //Κατα την αρχικοποίηση της εκπαίδευσης
+    // Initialization of the training
     public override void Initialize()
     {
         rb = GetComponent<Rigidbody>();
     }
 
-    //Συλλογή παρατηρήσεων του περιβάλλοντος από τον πράκτορα
+    // Collects the agent's observation from its environment
     public override void CollectObservations(VectorSensor sensor)
     {
         sensor.AddObservation(rb.velocity);
@@ -66,91 +66,50 @@ public class RocketAgentLevel5ImitationScript : Agent
         sensor.AddObservation(transform.rotation.z);
         sensor.AddObservation(finishPadRed.transform.position);
         sensor.AddObservation(finishPadGreen.transform.position);
-
     }
 
-    //Επιλογή δράσης απο τον πράκτορα και κατάλληλη απόδοση ποινών και ανταμοιβών
+    // Action selected from the agent and its penalty/reward assignment
     public override void OnActionReceived(float[] vectorAction)
     {
         float thrustingAction = vectorAction[0];
 
         float rotationAction = vectorAction[1];
 
-        //πιθανές δράσεις για τον κινητήρα
+        // Possible actions for the turbine
         if(thrustingAction==1)
         {
             rb.AddRelativeForce(Vector3.up * mainThrust * Time.deltaTime); print("thrust");
-            //if(episodeTimer<2) {AddReward(0.01f);}// για να δωθεί αρχικό κίνητρο να εξερευνήσει
-            //if(episodeTimer>100) {AddReward(-0.001f);} // για να δωθεί κίνητρο να σταματήσει να πετάει σαν εκκρεμές
-
-            //if(upLeft||upRight){AddReward(0.002f);}//Αν ο δευτερος στόχος είναι προς τα πάνω σε σχέση με τον πρώτο και πάει προς αυτόν
-            //if(downLeft||downRight){AddReward(-0.002f);}//Αν ο δευτερος στόχος είναι προς τα κάτω σε σχέση με τον πρώτο και πάει αντίθετα από αυτόν
         }
-        if(thrustingAction==0)//Καμία δράση να τιμωρείται λίγο
+        if(thrustingAction==0) // If no action is taken, penalize the agent
         {
             rb.AddRelativeForce(Vector3.up * 0 * Time.deltaTime);
             print("not thrusting");
             AddReward(-0.0001f);
-            //if(downLeft||downRight){AddReward(0.002f);}//Αν ο δευτερος στόχος είναι προς τα κάτω σε σχέση με τον πρώτο και πάει προς αυτόν
-            //if(upLeft||upRight){AddReward(-0.002f);}//Αν ο δευτερος στόχος είναι προς τα κάτω σε σχέση με τον πρώτο και πάει αντίθετα από αυτόν
         }
 
-        //πιθανές δράσεις για την περιστροφή του πυραύλου
-        if(rotationAction==1)//περιστροφή προς τα αριστερά
+        // Possible actions for the rotation of the rocket
+        if(rotationAction==1) // Left rotation
         {
             ApplyRotation(rotationThrust); 
-            print("left rotation");
-            //if(downLeft||upLeft){AddReward(0.002f);}//Αν ο δευτερος στόχος είναι προς τα αριστερά σε σχέση με τον πρώτο και πάει προς αυτόν
-           // if(downRight||upRight){AddReward(-0.002f);}//Αν ο δευτερος στόχος είναι προς τα δεξιά σε σχέση με τον πρώτο και παει αντίθετα από αυτόν
-            
+            print("left rotation");  
         }
 
-        if(rotationAction==2)//περιστροφή προς τα δεξιά
+        if(rotationAction==2) // Right rotation
         {
             ApplyRotation(-rotationThrust); 
-            print("right rotation");
-            //if(downRight||upRight){AddReward(0.002f);}//Αν ο δευτερος στόχος είναι προς τα δεξιά σε σχέση με τον πρώτο και παει προς αυτόν
-            //if(downLeft||upLeft){AddReward(-0.002f);}//Αν ο δευτερος στόχος είναι προς τα δεξιά σε σχέση με τον πρώτο και παει αντίθετα απο αυτόν
-            
-            /*Προσωρινή αφαίρεση, καθώς μπορεί να έχει και αριστερά και δεξιά landingPads
-            if (landingPadIsOnRight)//Όταν είναι δεξιά το LandingPad
-            {
-                AddReward(0.002f);//Επιβράβευση όταν πηγαίνει προς τα δεξιά
-            }else
-            {
-                AddReward(-0.002f);// Ποινή όταν πηγαίνει προς τα αριστερά
-            }*/
-        
+            print("right rotation");       
         }
 
+        if(rotationAction==0){ApplyRotation(0); print("no rotation");} // No action
 
-        if(rotationAction==0){ApplyRotation(0); print("no rotation");} //Δε κάνει τίποτα αν επιλεγεί αυτή η δράση
-
-        //Τιμωρία αν περνάει την χ συντεταγμένη του landingPad
-        /*Προσωρινή αφαίρεση, καθώς μπορεί να έχει και αριστερά και δεξιά landingPads
-        if (landingPadIsOnRight)
-        {
-            if (transform.position.x>finishPadRed.transform.position.x+3.5f)//Αν προσπεράσει ΟΛΟΚΛΗΡΟ το landingPad
-            {
-                print("doylevei deksia");
-                AddReward(-0.0002f);
-            }
-        }else
-        {
-            if (transform.position.x<finishPadRed.transform.position.x-3.5f)//Αν προσπεράσει ΟΛΟΚΛΗΡΟ το landingPad
-            {
-                AddReward(-0.0002f);
-            }
-        }*/
-
-        //Πρωτότυπο: if((transform.position.y>60) || (transform.position.y<-5) || (transform.position.x>50) || transform.position.x<-50)
-        //Ποινή αν βγεί εκτός ορίων της πίστας ο πύραυλος και επανεκκίνηση επεισοδίου
+        // Penalty when the agent gets past the x coordinate of the LandinPad
         if((transform.position.y>launchPad.transform.position.y+60) || (transform.position.y<launchPad.transform.position.y-5) || (transform.position.x>launchPad.transform.position.x+55) || transform.position.x<launchPad.transform.position.x-45)
         {
             AddReward(-1f);
             EndEpisode();
         }
         
+        // Checks if the first LandingPad has been found
         if((rocketLandedRedFlag || rocketLandedGreenFlag) && (oneTimeFlag))
         {
             oneTimeFlag=false;
@@ -159,163 +118,136 @@ public class RocketAgentLevel5ImitationScript : Agent
             AddReward(8f);
         }
 
-        //Επιβράβευση αν νικήσει= αν βρει τον στόχο ο πύραυλος, και επανεκκίνηση επεισοδίου
+        // Big reward if the agent reaches the FinishPad
         if(rocketLandedRedFlag && rocketLandedGreenFlag)
         {
             AddReward(20f);
             EndEpisode();
         }
 
-        //Ποινή αν χτυπήσει σε μη φιλικό έδαφος/εμπόδιο/όχι στο landingPad
+        // Penalty if the agents hits on the ground/obstacle
         if(episodeDoneFlag)
         {
             AddReward(-1f);
             EndEpisode();
         }
         
-        //μια φορά στην αρχή του επεισοδίου θα αποκρύψει την βάση
+        // Hides the LaunchPad after a short period of time
         if(episodeTimer>6f){launchPad.SetActive(false);}
 
+        // Max time limitation for the episode to end
         if(episodeTimer>120f){AddReward(-2f);EndEpisode();}
 
-        //Επιδειξη του Reward του παρόντος επεισοδίου, στην οθόνη του παίχτη
+        // Current reward of the episode display on screen
         rewardText.text=GetCumulativeReward().ToString("0.000");
     }
     
-    //Για δοκιμή των κινήσεων με το πάτημα πλήκτρων όταν δεν γίνεται η εκπαίδευση
+    // When not training, programemr can get control of the rocket's movement
     public override void Heuristic(float[] actionsOut)
     {
+        bool isThrusting= Input.GetKey(KeyCode.Space);
+        bool leftRotationgKey = Input.GetKey(KeyCode.A);
+        bool rightRotationKey = Input.GetKey(KeyCode.D);
 
-    bool isThrusting= Input.GetKey(KeyCode.Space);
-    bool leftRotationgKey = Input.GetKey(KeyCode.A);
-    bool rightRotationKey = Input.GetKey(KeyCode.D);
+        if(isThrusting)
+        {
+            actionsOut[0]=1;
+        }else
+        {
+            actionsOut[0]=0;
+        }
 
-    if(isThrusting)
-    {
-        actionsOut[0]=1;
-        //print("space pressed");
-    }else
-    {
-        actionsOut[0]=0;
+        if(leftRotationgKey)
+        {
+            actionsOut[1]=1;
+        }else if (rightRotationKey)
+        {
+            actionsOut[1]=2;
+        }else
+        {
+            actionsOut[1]=0;
+        }
     }
 
-    if(leftRotationgKey)
-    {
-        actionsOut[1]=1;
-    }else if (rightRotationKey)
-    {
-        actionsOut[1]=2;
-    }else
-    {
-        actionsOut[1]=0;
-    }
-    }
-    
-
-    //Οι κατάλληλες αρχικοποιήσεις στην αρχή κάθε επεισοδίου.
+    // Resets the values, at the beginning of each episode
     public override void OnEpisodeBegin()
     {
         finishPadRed.SetActive(true);
         finishPadGreen.SetActive(true);
         launchPad.SetActive(true);
-        RandomLandingPadRepositionOnTheRight();//Level2 //Level 3
+        RandomLandingPadReposition(); //Level2 //Level3
 
-        episodeTimer=0;//για την διαφράφη του launchPad μετά απο 3 δευτερόλεπτα
+        episodeTimer=0; // Deletion of LaunchPad after 3 seconds
         oneTimeFlag=true;
         episodeDoneFlag=false;
         rocketLandedRedFlag=false;
         rocketLandedGreenFlag=false;
 
-        //Level5 σχετικές θέσεις
+        //Level5 relative positions
         //FinishPad_First()
         upLeft=false;
         upRight=false;
         downLeft=false;
         downRight=false;
 
-        //Σωστή τοποθέτηση του πυραύλου στην αρχή της πίστας
-        randomNumberRocket = Random.Range(-2,2);//Για τυχαία τοποθέτηση του πυράυλου στην αρχή
-        transform.position= new Vector3(launchPad.transform.position.x+randomNumberRocket,launchPad.transform.position.y+1.7f,launchPad.transform.position.z); //Πρωτότυπο: new Vector3(-5,1.7f,0);
+        // Reposition of the rocket on top of the LaunchPad
+        randomNumberRocket = Random.Range(-2,2); // Random reposition on top of the LaunchPad //Level5
+        transform.position= new Vector3(launchPad.transform.position.x+randomNumberRocket,launchPad.transform.position.y+1.7f,launchPad.transform.position.z);
         transform.rotation= Quaternion.Euler(0,0,0);
-        rb.velocity=new Vector3(0,0,0); // μηδενισμός της ταχύτητας που έιχε ο πύραυλος λίγο πριν την λήξη του επεισοδίου
-        
-        //LandingPadPosition();//Υπολογισμός σχετικής θέσης του landing με το launch pad
+        rb.velocity=new Vector3(0,0,0); // Reset at 0 of the rocket speed
     }
 
     //Level2, Level3, Level4, Level5
-    private void RandomLandingPadRepositionOnTheRight()
+    private void RandomLandingPadReposition()
     {
         
-        randomNumberRedX= Random.Range(5,45);// Πρωτότυπο Random.Range(0,40); //LEVEL2,
-        randomNumberRedY= Random.Range(0,30);//Level4 για ύψος
-        randomNumberGreenX= Random.Range(5,45);// Πρωτότυπο Random.Range(0,40); //LEVEL2,Level5
-        randomNumberGreenY= Random.Range(0,30);//Level4 για ύψος,level5
-        if(randomNumberRedX%2==1)//Τοποθέτηση του landingPad στα δεξιά
+        randomNumberRedX= Random.Range(5,45); // Level2
+        randomNumberRedY= Random.Range(0,30); // Level4
+        randomNumberGreenX= Random.Range(5,45); // Level2, Level5
+        randomNumberGreenY= Random.Range(0,30); // Level4, Level5
+        // Level3 
+        if(randomNumberRedX%2==1)// Right side
         {
             finishPadRed.transform.position= new Vector3(launchPad.transform.position.x+randomNumberRedX,launchPad.transform.position.y+randomNumberRedY,launchPad.transform.position.z);
-        }else//Τοποθέτηση του landingPad στα αριστερά
+        }else // Left side
         {
             finishPadRed.transform.position= new Vector3(launchPad.transform.position.x-randomNumberRedX,launchPad.transform.position.y+randomNumberRedY,launchPad.transform.position.z);
         }
-        if(randomNumberGreenX%2==1)//Τοποθέτηση του landingPad στα δεξιά //Level5
+        // Level5
+        if(randomNumberGreenX%2==1) // Right side
         {
             finishPadGreen.transform.position= new Vector3(launchPad.transform.position.x+randomNumberGreenX,launchPad.transform.position.y+randomNumberGreenY,launchPad.transform.position.z);
-        }else//Τοποθέτηση του landingPad στα αριστερά //Level5
+        }else // Left side
         {
             finishPadGreen.transform.position= new Vector3(launchPad.transform.position.x-randomNumberGreenX,launchPad.transform.position.y+randomNumberGreenY,launchPad.transform.position.z);
         }
-        
-        //Πρωτότυπο Vector3(randomNumberRedX,0,0);
-        //LEVEL2finishPad.transform.position= new Vector3(launchPad.transform.position.x+randomNumberRedX,launchPad.transform.position.y,launchPad.transform.position.z);
     }
-    
-    /*Προσωρινά ανενεργό
-    private void LandingPadPosition()
-    {
-        // Να έχω τον νου μου μήπως υπάρχει πρόβλημα με το = ή αν συμπέφτουν καμιά φορά
-        //if(finishPadRed.transform.position.x>launchPad.transform.position.x) //Πρωτότυπο 
-        if(finishPadRed.transform.position.x>-5)
-        {
-            landingPadIsOnRight=true;
-        }else
-        {
-            landingPadIsOnRight=false;
-        }
-    }*/
-
-
 
     private void FinishPadRedFirst()
     {
-        
         if((finishPadRed.transform.position.x>finishPadGreen.transform.position.x) && (finishPadRed.transform.position.y<finishPadGreen.transform.position.y))
-        {upLeft=true;}//Πανω και αριστερά
+        {upLeft=true;} // UpLeft
         else if((finishPadRed.transform.position.x<finishPadGreen.transform.position.x) && (finishPadRed.transform.position.y<finishPadGreen.transform.position.y))
-        {upRight=true;}//Πάνω και δεξιά
+        {upRight=true;} // UpRight
         else if((finishPadRed.transform.position.x>finishPadGreen.transform.position.x) && (finishPadRed.transform.position.y>finishPadGreen.transform.position.y))
-        {downLeft=true;}//Κάτω και αριστερά
+        {downLeft=true;} // DownLeft
         else if((finishPadRed.transform.position.x<finishPadGreen.transform.position.x) && (finishPadRed.transform.position.y>finishPadGreen.transform.position.y))
-        {downRight=true;}//Κατω και δεξιά
-        
-        
-        
+        {downRight=true;} // DownRight
     }
 
     private void FinishPadGreenFirst()
     {
         if((finishPadGreen.transform.position.x>finishPadRed.transform.position.x) && (finishPadGreen.transform.position.y<finishPadRed.transform.position.y))
-        {upLeft=true;}//Πανω και αριστερά
+        {upLeft=true;} // UpLeft
         else if((finishPadGreen.transform.position.x<finishPadRed.transform.position.x) && (finishPadGreen.transform.position.y<finishPadRed.transform.position.y))
-        {upRight=true;}//Πάνω και δεξιά
+        {upRight=true;} // UpRight
         else if((finishPadGreen.transform.position.x>finishPadRed.transform.position.x) && (finishPadGreen.transform.position.y>finishPadRed.transform.position.y))
-        {downLeft=true;}//Κάτω και αριστερά
+        {downLeft=true;} // DownLeft
         else if((finishPadGreen.transform.position.x<finishPadRed.transform.position.x) && (finishPadGreen.transform.position.y>finishPadRed.transform.position.y))
-        {downRight=true;}//Κατω και δεξιά
+        {downRight=true;} // DownRight
     }
 
-
-
-    // Περιστροφή πυραύλου Movement.cs 
+    // Rocket Rotation
     void ApplyRotation(float rotationThisFrame)
     {
         rb.freezeRotation = true; // freezing rotation 
@@ -323,7 +255,7 @@ public class RocketAgentLevel5ImitationScript : Agent
         rb.freezeRotation = false; // UNfreezing rotation 
     }
 
-    //Διαχείριση συγκρούσεων του πράκτορα με τα διάφορα αντικείμενα του περιβάλλοντος
+    // Collision handling of the agent, with the other objects in scene
     private void OnCollisionEnter(Collision other) 
     {
         
