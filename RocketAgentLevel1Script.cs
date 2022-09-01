@@ -24,7 +24,7 @@ public class RocketAgentLevel1Script : Agent
     // LandingPosition() 
     public bool landingPadIsOnRight=true;
 
-    // UIScript
+    // UIScript.cs
     public Text rewardText;
 
     // Initialization of the training
@@ -49,7 +49,7 @@ public class RocketAgentLevel1Script : Agent
         float thrustingAction = vectorAction[0];
         float rotationAction = vectorAction[1];
 
-        // possible actions for the turbine
+        // Possible actions for the turbine
         if(thrustingAction==1){rb.AddRelativeForce(Vector3.up * mainThrust * Time.deltaTime); print("thrust");}
         if(thrustingAction==0){rb.AddRelativeForce(Vector3.up * 0 * Time.deltaTime); print("not thrusting"); AddReward(-0.0001f);} // If no action is taken, penalize the agent
 
@@ -175,7 +175,6 @@ public class RocketAgentLevel1Script : Agent
         }
     }
 
-
     // Rocket Rotation
     void ApplyRotation(float rotationThisFrame)
     {
@@ -187,7 +186,6 @@ public class RocketAgentLevel1Script : Agent
     // Collision handling of the agent, with the other objects in scene
     private void OnCollisionEnter(Collision other) 
     {
-        
         switch(other.gameObject.tag) 
         {
             case "Friendly":
