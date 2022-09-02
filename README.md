@@ -1,10 +1,12 @@
 # Rocket-Learning-using-ML-in-Unity
 This project was part of the course "Computanional Intelligence", for my Computer Science studies. There is more detail in greek, on my official project report and short presentation.
+[Rocket Learning Report.pdf](https://github.com/alexdafn/Rocket-Learning-using-ML-in-Unity/files/9474076/Rocket.Learning.Report.pdf)
+
+[Rocket Learning Presentation.pptx](https://github.com/alexdafn/Rocket-Learning-using-ML-in-Unity/files/9474077/Rocket.Learning.Presentation.pptx)
 
 ## Abstract
 
 This project is about creating a simple environment, where the agent-rocket will start fron an initial base, at the center of the scene and will try to reach a target base, trying to overcome and learn each level's difficulties. The difficuclty on every scenario increases gradually. If the agent touches anything but the target base or if the time of exploration expires, the level will be restarted. After creating the simulation environment of each level and properly programming the rocket's movement system, with the help of **Reinforcement Learning** and ML-Agent toolkit that Unity offers, the rocket will get trained to successfully finish every level.
-
 
 ## RocketAgentLevel1Script.cs
 A simple level, with one *LaunchPad* at the center of the screen and one *LandingPad* on the right side. Successfully trained.
@@ -51,10 +53,12 @@ There are the settings that I had on my training file. After the training proces
 
 ## DEMO 1: Levels 1-4
 
+https://user-images.githubusercontent.com/32633615/188035003-24a401fc-a4ed-47aa-94fc-06651811e693.mp4
 
 ## DEMO 2: Level 5
 
+https://user-images.githubusercontent.com/32633615/188035108-e8383654-042d-40d9-80c4-988c6cf24eba.mp4
 
 ## DEMO 3: Levels 6-8
 
-
+https://user-images.githubusercontent.com/32633615/188035146-02cbd3ef-24f2-46be-96ad-a4cf2c9574fe.mp4
