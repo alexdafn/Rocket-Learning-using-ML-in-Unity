@@ -1,5 +1,5 @@
 # Rocket-Learning-using-ML-in-Unity
-This project was part of the course "Computanional Intelligence", for my Computer Science studies. There is more detail in greek, on my official project report.
+This project was part of the course "Computanional Intelligence", for my Computer Science studies. There is more detail in greek, on my official project report and short presentation.
 
 ## Abstract
 
@@ -44,4 +44,17 @@ Its similar to level 6, but the target base, on top of the obstacle is a lot sma
 ### RocketAgentLevel8.cs
 
 Its similar to level 6, but there are 2 obstacle-cubes that spawn randomly in space and make it harder for the agent to reach the target base. Successfully trained.
+
+### trainer_config.yaml
+
+There are the settings that I had on my training file. After the training process, a neural network file was produced, which was placed on the agent with drag and drop in Unity's editor. This way the agent was able to play the level according to its training.
+
+## DEMO 1: Levels 1-4
+
+
+## DEMO 2: Level 5
+
+
+## DEMO 3: Levels 6-8
+
 
