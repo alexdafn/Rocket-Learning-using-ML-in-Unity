@@ -7,24 +7,41 @@ This project is about creating a simple environment, where the agent-rocket will
 
 
 ## RocketAgentLevel1Script.cs
-A simple level, with one *LaunchPad* at the center of the screen and one *LandingPad* on the right side. 
+A simple level, with one *LaunchPad* at the center of the screen and one *LandingPad* on the right side. Successfully trained.
 
 In this script, the agent-rocket collects its environmental observations (speed, 3D position, z rotation, finishPad location) with `CollectObservations(VectorSensor sensor)`. The rocket uses the *RayCasting 3D* component that Unity offers from the editor, to track the objects of its environment, with 2 sets of Rays, one on top of it and one on the bottom. It also randomly selects an action (UpKey-Turbine activation, LeftKey-Left rotation, RightKey-Right rotation), which will reward it, according to the policy that has been given to it, using `OnActionReceived(float[] vectorAction)`. The function `Heuristic(float[] actionsOut)` is used for testing the rocket's movements with the keyboard, in combination with *OnActionReceived()*. Finally, the function `OnEpisodeBegin()` is used at the beginning of each episode, to reset every value before the episode ends and places the rocket at the initial position. On every new episode, the training cicle described before, starts again.
 
-The core and logic on every other script is similar to this one. The changes that have been made, are about the policy of the agent, with different reward values for some actions. The placement of the target bases is different among the levels.
+The core code and logic on every other script is similar to this one. The changes that have been made, are about the policy of the agent, with different reward values for some actions. The placement of the target bases is different among the levels.
 
 ### RocketAgentLevel2Script.cs
 
-Now the *LandingPad* is being spawned on a random position, on the right side with every successful episode.
+Now the *LandingPad* is being spawned on a random position, on the right side with every successful episode. Successfully trained.
 
 ### RocketAgentLevel3Script.cs
 
-Now the *LandingPad* is being spawned on a random position, on the right or left side with every successful episode.
+Now the *LandingPad* is being spawned on a random position, on the right or left side with every successful episode. Successfully trained.
 
 ### RocketAgentLevel4Script.cs
 
-Now the *LandingPad* is being spawned on a random position, on the right or left side, as well as up and down with every successful episode.
+Now the *LandingPad* is being spawned on a random position, on the right or left side, as well as up and down with every successful episode. 
 
-## RocketAgentLevel5Script.cs
+### RocketAgentLevel5Script.cs
 
-This level was the hardest one for the agent to train. Its similar to level 4, but there are two target bases that have to be reached, in order the agent successfully finishes the episode.
+This level was the hardest one for the agent to train. Its similar to level 4, but there are two target bases that have to be reached, in order the agent successfully finishes the episode. The agent needs more time to reach the bases, with a 70% success in the end. 
+
+### RocketAgentLevel5ImitationScript.cs
+
+The exact same level as level 5 but the Imitation Learning method was used to try to get better results. Unity offers the option for **Imitation Learning**, with the recording of the gameplay from a player, and then that record can be used to support the neural network and get faster to convergence. The results where similar to level 5.
+
+### RocketAgentLevel6.cs
+
+Now there is an obstacle on the bottom part of the *LandingPad*, making it harder for the agent to reach the target base from below. Successfully trained.
+
+### RocketAgentLevel7.cs
+
+Its similar to level 6, but the target base, on top of the obstacle is a lot smaller, making it harder to reach from certain angles. Successfully trained.
+
+### RocketAgentLevel8.cs
+
+Its similar to level 6, but there are 2 obstacle-cubes that spawn randomly in space and make it harder for the agent to reach the target base. Successfully trained.
+
