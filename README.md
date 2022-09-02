@@ -1,5 +1,6 @@
 # Rocket-Learning-using-ML-in-Unity
 This project was part of the course "Computanional Intelligence", for my Computer Science studies. There is more detail in greek, on my official project report and short presentation.
+
 [Rocket Learning Report.pdf](https://github.com/alexdafn/Rocket-Learning-using-ML-in-Unity/files/9474076/Rocket.Learning.Report.pdf)
 
 [Rocket Learning Presentation.pptx](https://github.com/alexdafn/Rocket-Learning-using-ML-in-Unity/files/9474077/Rocket.Learning.Presentation.pptx)
