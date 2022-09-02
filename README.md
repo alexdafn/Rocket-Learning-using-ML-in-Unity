@@ -36,15 +36,15 @@ This level was the hardest one for the agent to train. Its similar to level 4, b
 
 The exact same level as level 5 but the Imitation Learning method was used to try to get better results. Unity offers the option for **Imitation Learning**, with the recording of the gameplay from a player, and then that record can be used to support the neural network and get faster to convergence. The results where similar to level 5.
 
-### RocketAgentLevel6.cs
+### RocketAgentLevel6Script.cs
 
 Now there is an obstacle on the bottom part of the *LandingPad*, making it harder for the agent to reach the target base from below. Successfully trained.
 
-### RocketAgentLevel7.cs
+### RocketAgentLevel7Script.cs
 
 Its similar to level 6, but the target base, on top of the obstacle is a lot smaller, making it harder to reach from certain angles. Successfully trained.
 
-### RocketAgentLevel8.cs
+### RocketAgentLevel8Script.cs
 
 Its similar to level 6, but there are 2 obstacle-cubes that spawn randomly in space and make it harder for the agent to reach the target base. Successfully trained.
 
