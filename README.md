@@ -9,6 +9,8 @@ This project was part of the course "Computanional Intelligence", for my Compute
 
 This project is about creating a simple environment, where the agent-rocket will start fron an initial base, at the center of the scene. The main goal is to reach a target base, trying to overcome and learn each level's difficulties. The difficuclty on every scenario increases gradually. If the agent touches anything but the target base or if the time of exploration expires, the level will be restarted. After creating the simulation environment of each level and properly programming the rocket's movement system, with the help of **Reinforcement Learning** and ML-Agents toolkit that Unity offers, the rocket will get trained to successfully finish every level.
 
+![Demo-Photo-RocketLearning](https://user-images.githubusercontent.com/32633615/188036715-eaf9f057-624c-40af-90ea-78120e6589af.jpg)
+
 ## RocketAgentLevel1Script.cs
 A simple level, with one *LaunchPad* at the center of the screen and one *LandingPad* on the right side. Successfully trained.
 
