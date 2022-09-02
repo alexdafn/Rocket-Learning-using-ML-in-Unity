@@ -7,7 +7,7 @@ This project was part of the course "Computanional Intelligence", for my Compute
 
 ## Abstract
 
-This project is about creating a simple environment, where the agent-rocket will start fron an initial base, at the center of the scene and will try to reach a target base, trying to overcome and learn each level's difficulties. The difficuclty on every scenario increases gradually. If the agent touches anything but the target base or if the time of exploration expires, the level will be restarted. After creating the simulation environment of each level and properly programming the rocket's movement system, with the help of **Reinforcement Learning** and ML-Agent toolkit that Unity offers, the rocket will get trained to successfully finish every level.
+This project is about creating a simple environment, where the agent-rocket will start fron an initial base, at the center of the scene. The main goal is to reach a target base, trying to overcome and learn each level's difficulties. The difficuclty on every scenario increases gradually. If the agent touches anything but the target base or if the time of exploration expires, the level will be restarted. After creating the simulation environment of each level and properly programming the rocket's movement system, with the help of **Reinforcement Learning** and ML-Agents toolkit that Unity offers, the rocket will get trained to successfully finish every level.
 
 ## RocketAgentLevel1Script.cs
 A simple level, with one *LaunchPad* at the center of the screen and one *LandingPad* on the right side. Successfully trained.
@@ -18,19 +18,19 @@ The core code and logic on every other script is similar to this one. The change
 
 ### RocketAgentLevel2Script.cs
 
-Now the *LandingPad* is being spawned on a random position, on the right side with every successful episode. Successfully trained.
+In this level, the *LandingPad* is being spawned on a random position, on the right side with every successful episode. Successfully trained.
 
 ### RocketAgentLevel3Script.cs
 
-Now the *LandingPad* is being spawned on a random position, on the right or left side with every successful episode. Successfully trained.
+In this level, the *LandingPad* is being spawned on a random position, on the right or left side with every successful episode. Successfully trained.
 
 ### RocketAgentLevel4Script.cs
 
-Now the *LandingPad* is being spawned on a random position, on the right or left side, as well as up and down with every successful episode. 
+In this level, the *LandingPad* is being spawned on a random position, on the right or left side, as well as up and down with every successful episode. 
 
 ### RocketAgentLevel5Script.cs
 
-This level was the hardest one for the agent to train. Its similar to level 4, but there are two target bases that have to be reached, in order the agent successfully finishes the episode. The agent needs more time to reach the bases, with a 70% success in the end. 
+This level was the hardest one for the agent to get trained. Its similar to level 4, but there are two target bases that have to be reached, in order the agent successfully finishes the episode. The agent needs more time to reach the bases, with a 70% success in the end. 
 
 ### RocketAgentLevel5ImitationScript.cs
 
@@ -38,7 +38,7 @@ The exact same level as level 5 but the Imitation Learning method was used to tr
 
 ### RocketAgentLevel6Script.cs
 
-Now there is an obstacle on the bottom part of the *LandingPad*, making it harder for the agent to reach the target base from below. Successfully trained.
+In this level, there is an obstacle on the bottom part of the *LandingPad*, making it harder for the agent to reach the target base from below. Successfully trained.
 
 ### RocketAgentLevel7Script.cs
 
@@ -50,7 +50,7 @@ Its similar to level 6, but there are 2 obstacle-cubes that spawn randomly in sp
 
 ### trainer_config.yaml
 
-There are the settings that I had on my training file. After the training process, a neural network file was produced, which was placed on the agent with drag and drop in Unity's editor. This way the agent was able to play the level according to its training.
+These are the settings that I had on my training file. I used **PPO** algorithm for training. After the training process, a neural network file was produced, which was placed on the agent with drag and drop in Unity's editor. This way the agent was able to play the level according to its training.
 
 ## DEMO 1: Levels 1-4
 
